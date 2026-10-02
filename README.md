@@ -26,9 +26,9 @@ A powerful, lightweight AutoHotkey v2 script that enhances Windows virtual deskt
 
 ### Prerequisites
 - Windows 10/11 (virtual desktop support required)
-- [AutoHotkey v2.0+](https://www.autohotkey.com/download/ahk-v2.exe)
+- [AutoHotkey v2.0+](https://www.autohotkey.com/download/ahk-v2.exe) (for running `.ahk` or compiling to EXE)
 
-### Installation
+### Installation (Recommended: PowerShell Script)
 
 1. **Clone the repository:**
    ```powershell
@@ -36,21 +36,52 @@ A powerful, lightweight AutoHotkey v2 script that enhances Windows virtual deskt
    cd windows_shortcuts
    ```
 
-2. **Install the DLL:**
+2. **Run the installer:**
    ```powershell
-   # Create the required directory
-   New-Item -ItemType Directory -Force -Path "$env:APPDATA\VirtualDesktopAccessor"
+   # Default: installs DLL, creates startup shortcut, no compilation
+   .\install.ps1
    
-   # Copy the DLL (from lib/ folder)
-   Copy-Item "lib\VirtualDesktopAccessor.dll" "$env:APPDATA\VirtualDesktopAccessor\"
+   # Options:
+   .\install.ps1 -NoAutoStart      # Skip startup shortcut
+   .\install.ps1 -Compile          # Force compile to EXE (if Ahk2Exe available)
+   .\install.ps1 -NoPrompt         # Silent mode (no prompts)
+   .\install.ps1 -Uninstall        # Remove installation (preserves config)
+   ```
+
+   The installer will:
+   - Copy `VirtualDesktopAccessor.dll` to `%APPDATA%\shortcuts\`
+   - Verify DLL integrity via SHA256
+   - Optionally compile to `VirtualDesktopManager.exe` (if AutoHotkey v2 + Ahk2Exe detected)
+   - Create a startup shortcut (enabled by default)
+
+3. **Done!** The manager runs automatically on next login, or run manually:
+   ```powershell
+   # From install directory
+   %APPDATA%\shortcuts\VirtualDesktopManager.exe
+   # Or directly via AHK
+   src\virtual_desktops.ahk
+   ```
+
+### Manual Installation (Fallback)
+
+If you prefer not to use the install script:
+
+1. **Create directories:**
+   ```powershell
+   New-Item -ItemType Directory -Force -Path "$env:APPDATA\shortcuts"
+   ```
+
+2. **Copy the DLL:**
+   ```powershell
+   Copy-Item "lib\VirtualDesktopAccessor.dll" "$env:APPDATA\shortcuts\"
    ```
 
 3. **Run the script:**
    - Double-click `src\virtual_desktops.ahk`
-   - Or compile to EXE: `Ahk2Exe.exe /in src\virtual_desktops.ahk /out VirtualDesktopManager.exe`
+   - Or compile to EXE: `Ahk2Exe.exe /in src\virtual_desktops.ahk /out %APPDATA%\shortcuts\VirtualDesktopManager.exe`
 
 4. **Auto-start (optional):**
-   - Create shortcut in `shell:startup` → `VirtualDesktopManager.exe`
+   Create shortcut in `shell:startup` pointing to `%APPDATA%\shortcuts\VirtualDesktopManager.exe` (or the `.ahk` file)
 
 ---
 
@@ -89,11 +120,13 @@ windows_shortcuts/
 
 ## ⚙️ Configuration
 
-All user data lives in `%APPDATA%\VirtualDesktopManager\`:
+All user data lives in `%APPDATA%\shortcuts\`:
 
 | File | Purpose |
 |------|---------|
 | `desktops.json` | Desktop names (auto-saved on exit) |
+| `.dllhash` | Stored DLL SHA256 for integrity checks |
+| `VirtualDesktopManager.exe` | Compiled executable (if built) |
 
 **Example `desktops.json`:**
 ```json
@@ -160,7 +193,7 @@ Ahk2Exe.exe /in src\virtual_desktops.ahk /out VirtualDesktopManager.exe /icon cu
 
 ### DLL Requirements
 - `VirtualDesktopAccessor.dll` must be x64
-- Place at `%APPDATA%\VirtualDesktopAccessor\VirtualDesktopAccessor.dll`
+- Place at `%APPDATA%\shortcuts\VirtualDesktopAccessor.dll`
 - Source: [VirtualDesktopAccessor](https://github.com/Ciantic/VirtualDesktopAccessor) (or build from source)
 
 ---
@@ -169,10 +202,12 @@ Ahk2Exe.exe /in src\virtual_desktops.ahk /out VirtualDesktopManager.exe /icon cu
 
 | Issue | Solution |
 |-------|----------|
-| `TrayTip: Failed to load DLL` | Verify DLL exists at `%APPDATA%\VirtualDesktopAccessor\VirtualDesktopAccessor.dll` |
+| `TrayTip: Failed to load DLL` | Verify DLL exists at `%APPDATA%\shortcuts\VirtualDesktopAccessor.dll` |
 | Hotkeys don't work | Run as Administrator (some apps block hooks) |
-| Desktop names reset | Check `%APPDATA%\VirtualDesktopManager\desktops.json` permissions |
+| Desktop names reset | Check `%APPDATA%\shortcuts\desktops.json` permissions |
 | `Win+Shift+C` opens wrong browser | Edit `src\virtual_desktops.ahk` line 30: `Run "firefox"` → your browser path |
+| Installer: "DLL hash verification FAILED" | Re-run `.\install.ps1` to force re-copy; check antivirus isn't blocking |
+| Installer: "Not in repository root" | Run `.\install.ps1` from the cloned repo root directory |
 
 ---
 

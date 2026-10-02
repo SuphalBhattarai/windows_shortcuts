@@ -3,7 +3,7 @@
 class VDA {
     static hModule := 0
     static initialized := false
-    static DLL_PATH := A_AppData "\VirtualDesktopAccessor\VirtualDesktopAccessor.dll"
+    static DLL_PATH := A_AppData "\shortcuts\VirtualDesktopAccessor.dll"
     static _msgDesktopChange := 0
     static _GetCount := 0
     static _GoTo := 0

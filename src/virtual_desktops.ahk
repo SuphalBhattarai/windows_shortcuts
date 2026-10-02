@@ -4,9 +4,9 @@
 #include VDA.ahk
 
 SCRIPT_DIR := A_ScriptDir
-CONFIG_DIR := A_AppData "\VirtualDesktopManager"
+CONFIG_DIR := A_AppData "\shortcuts"
 CONFIG_FILE := CONFIG_DIR "\desktops.json"
-VDA_DLL_PATH := A_AppData "\VirtualDesktopAccessor\VirtualDesktopAccessor.dll"
+VDA_DLL_PATH := A_AppData "\shortcuts\VirtualDesktopAccessor.dll"
 
 ; --- Init VDA ---
 vdaOk := VDA.Init()
