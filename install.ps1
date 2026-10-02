@@ -139,9 +139,15 @@ function Get-DLLHash {
 function Find-Ahk2Exe {
     $candidates = @(
         "${env:ProgramFiles}\AutoHotkey\Compiler\Ahk2Exe.exe",
-        "${env:ProgramFiles(x86)}\AutoHotkey\Compiler\Ahk2Exe.exe",
-        (Get-Command Ahk2Exe.exe -ErrorAction SilentlyContinue).Source
+        "${env:ProgramFiles(x86)}\AutoHotkey\Compiler\Ahk2Exe.exe"
     )
+    
+    # Check PATH for Ahk2Exe
+    $pathCmd = Get-Command Ahk2Exe.exe -ErrorAction SilentlyContinue
+    if ($pathCmd -and $pathCmd.Source) {
+        $candidates += $pathCmd.Source
+    }
+    
     foreach ($c in $candidates) {
         if ($c -and (Test-Path $c)) {
             try {
