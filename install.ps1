@@ -59,6 +59,7 @@ $TARGET_DLL = Join-Path $BASE_DIR 'VirtualDesktopAccessor.dll'
 $TARGET_EXE = Join-Path $BASE_DIR 'VirtualDesktopManager.exe'
 $CONFIG_FILE = Join-Path $BASE_DIR 'desktops.json'
 $HASH_FILE = Join-Path $BASE_DIR '.dllhash'
+$LOG_FILE = Join-Path $BASE_DIR 'install.log'
 
 $STARTUP_DIR = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Startup'
 $STARTUP_SHORTCUT = Join-Path $STARTUP_DIR 'Virtual Desktop Manager.lnk'
@@ -68,19 +69,47 @@ $EXPECTED_HASH = 'f78ff6334f6c0ef5175ec0819026cec31d421a564b9ed1ee1ac4b6ed98d4f9
 # ─── Logging Functions ───
 function Write-Log {
     param([string]$Message, [string]$Level = 'INFO')
-    $timestamp = Get-Date -Format 'HH:mm:ss'
+    $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
     $prefix = switch ($Level) {
         'WARN'  { '[WARN] ' }
         'ERROR' { '[ERROR] ' }
         default { '[INFO]  ' }
     }
-    Write-Host "$timestamp $prefix$Message"
+    $logLine = "$timestamp $prefix$Message"
+    
+    # Write to console
+    Write-Host $logLine
+    
+    # Write to log file
+    try {
+        Ensure-Directory $BASE_DIR
+        Add-Content -Path $LOG_FILE -Value $logLine -Encoding UTF8 -ErrorAction Stop
+    } catch {
+        # If log file write fails, continue silently (don't break install)
+    }
 }
 
 function Write-ErrorExit {
     param([string]$Message)
     Write-Log $Message 'ERROR'
+    # Pause before exit so user can read error
+    Write-Host ""
+    Write-Host "Press any key to exit..."
+    $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
     exit 1
+}
+
+function Pause-AndExit {
+    param([int]$ExitCode = 0)
+    Write-Host ""
+    Write-Host "=========================================="
+    Write-Host "Installation complete. Log saved to:"
+    Write-Host "  $LOG_FILE"
+    Write-Host "=========================================="
+    Write-Host ""
+    Write-Host "Press any key to close this window..."
+    $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
+    exit $ExitCode
 }
 
 # ─── Core Functions ───
@@ -113,7 +142,6 @@ function Find-Ahk2Exe {
     )
     foreach ($c in $candidates) {
         if ($c -and (Test-Path $c)) {
-            # Verify AHK v2 by checking version output
             try {
                 $ver = & $c /? 2>&1
                 if ($ver -match 'v2\.\d') {
@@ -251,6 +279,10 @@ function Uninstall-All {
         try { Remove-Item $HASH_FILE -Force; Write-Log "Removed hash file" }
         catch { Write-Log "Failed to remove hash file: $($_.Exception.Message)" 'WARN' }
     }
+    if (Test-Path $LOG_FILE) {
+        try { Remove-Item $LOG_FILE -Force; Write-Log "Removed log file" }
+        catch { Write-Log "Failed to remove log file: $($_.Exception.Message)" 'WARN' }
+    }
     
     # Preserve config
     if (Test-Path $CONFIG_FILE) {
@@ -263,6 +295,7 @@ function Uninstall-All {
 function Install-Main {
     Write-Log "=== INSTALL Virtual Desktop Manager ==="
     Write-Log "Base directory: $BASE_DIR"
+    Write-Log "Log file: $LOG_FILE"
     
     # 1. Verify/Install DLL
     if (-not (Verify-InstalledDLL)) {
@@ -318,11 +351,21 @@ function Install-Main {
 
 # ─── Main Entry ───
 try {
+    # Initialize log file (clear previous)
+    Ensure-Directory $BASE_DIR
+    if (Test-Path $LOG_FILE) {
+        Clear-Content $LOG_FILE -ErrorAction SilentlyContinue
+    }
+    
+    Write-Log "Starting Virtual Desktop Manager installer"
+    Write-Log "Script directory: $SCRIPT_DIR"
+    Write-Log "Parameters: NoAutoStart=$NoAutoStart, Compile=$Compile, Uninstall=$Uninstall, NoPrompt=$NoPrompt, Force=$Force"
+    
     Test-RepoRoot
     
     if ($Uninstall) {
         Uninstall-All
-        exit 0
+        Pause-AndExit 0
     }
     
     # Elevate only if needed (for startup shortcut creation in some environments)
@@ -332,6 +375,7 @@ try {
     }
     
     Install-Main
+    Pause-AndExit 0
 }
 catch {
     Write-ErrorExit "Fatal error: $($_.Exception.Message)"
