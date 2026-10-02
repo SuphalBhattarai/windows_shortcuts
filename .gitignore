@@ -1,0 +1,28 @@
+# AutoHotkey compiled scripts
+*.exe
+
+# User config (generated at runtime)
+%APPDATA%\VirtualDesktopManager\
+%APPDATA%\VirtualDesktopAccessor\
+
+# Build artifacts
+build/
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp

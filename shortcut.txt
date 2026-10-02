@@ -1,4 +1,0 @@
-
-Win+W    Close window
-Win+Shift+C     Open Firefox
-Win+Enter       Open Terminal
