@@ -59,7 +59,9 @@ $TARGET_DLL = Join-Path $BASE_DIR 'VirtualDesktopAccessor.dll'
 $TARGET_EXE = Join-Path $BASE_DIR 'VirtualDesktopManager.exe'
 $CONFIG_FILE = Join-Path $BASE_DIR 'desktops.json'
 $HASH_FILE = Join-Path $BASE_DIR '.dllhash'
-$LOG_FILE = Join-Path $BASE_DIR 'install.log'
+
+# Install log stored in script directory (repo root)
+$LOG_FILE = Join-Path $SCRIPT_DIR 'install.log'
 
 $STARTUP_DIR = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Startup'
 $STARTUP_SHORTCUT = Join-Path $STARTUP_DIR 'Virtual Desktop Manager.lnk'
