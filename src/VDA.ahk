@@ -19,6 +19,11 @@ class VDA {
         throw "VDA is static-only"
     }
 
+    static _Throw(msg) {
+        local e := Exception(msg)
+        throw e
+    }
+
     static Init() {
         if this.initialized
             return true
@@ -60,40 +65,40 @@ class VDA {
 
     static GetCount() {
         if !this.initialized
-            throw Exception("VDA not initialized")
+            this._Throw("VDA not initialized")
         return DllCall(this._GetCount, "Int")
     }
 
     static GetCurrent() {
         if !this.initialized
-            throw Exception("VDA not initialized")
+            this._Throw("VDA not initialized")
         return DllCall(this._Current, "Int")
     }
 
     static GoTo(n) {
         if !this.initialized
-            throw Exception("VDA not initialized")
+            this._Throw("VDA not initialized")
         if !IsInt(n) || n < 0
-            throw Exception("Invalid desktop index: " n)
+            this._Throw("Invalid desktop index: " n)
         return DllCall(this._GoTo, "Int", n, "Int") != -1
     }
 
     static Create() {
         if !this.initialized
-            throw Exception("VDA not initialized")
+            this._Throw("VDA not initialized")
         return DllCall(this._Create, "Int")
     }
 
     static Ensure(n) {
         if !this.initialized
-            throw Exception("VDA not initialized")
+            this._Throw("VDA not initialized")
         if !IsInt(n) || n < 0
-            throw Exception("Invalid desktop index: " n)
+            this._Throw("Invalid desktop index: " n)
         local count := this.GetCount()
         while count <= n {
             local newIdx := this.Create()
             if newIdx = -1
-                throw Exception("Failed to create desktop")
+                this._Throw("Failed to create desktop")
             count := this.GetCount()
         }
         return true
@@ -101,9 +106,9 @@ class VDA {
 
     static GetName(n) {
         if !this.initialized
-            throw Exception("VDA not initialized")
+            this._Throw("VDA not initialized")
         if !IsInt(n) || n < 0
-            throw Exception("Invalid desktop index: " n)
+            this._Throw("Invalid desktop index: " n)
         local buf := Buffer(1024, 0)
         local len := DllCall(this._GetName, "Int", n, "Ptr", buf, "Ptr", buf.Size, "Int")
         return StrGet(buf, "UTF-8")
@@ -111,11 +116,11 @@ class VDA {
 
     static SetName(n, name) {
         if !this.initialized
-            throw Exception("VDA not initialized")
+            this._Throw("VDA not initialized")
         if !IsInt(n) || n < 0
-            throw Exception("Invalid desktop index: " n)
+            this._Throw("Invalid desktop index: " n)
         if !IsStr(name)
-            throw Exception("Name must be string")
+            this._Throw("Name must be string")
         local buf := Buffer(1024, 0)
         StrPut(name, buf, "UTF-8")
         return DllCall(this._SetName, "Int", n, "Ptr", buf, "Int") != -1
@@ -123,11 +128,11 @@ class VDA {
 
     static MoveWindow(hwnd, n) {
         if !this.initialized
-            throw Exception("VDA not initialized")
+            this._Throw("VDA not initialized")
         if !IsInt(n) || n < 0
-            throw Exception("Invalid desktop index: " n)
+            this._Throw("Invalid desktop index: " n)
         if !DllCall("IsWindow", "Ptr", hwnd)
-            throw Exception("Invalid window handle")
+            this._Throw("Invalid window handle")
         DllCall(this._MoveWindow, "Ptr", hwnd, "Int", n, "Int")
         return true
     }

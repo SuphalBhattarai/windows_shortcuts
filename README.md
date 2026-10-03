@@ -89,13 +89,15 @@ If you prefer not to use the install script:
 
 | Shortcut | Action |
 |----------|--------|
-| `Win` + `1` – `9` | Switch to desktop 1–9 |
-| `Win` + `Shift` + `1` – `9` | Move active window to desktop 1–9 & follow |
+| `LWin` + `1` – `9` (hold LWin, tap number) | Switch to desktop 1–9 |
+| `LWin` + `Shift` + `1` – `9` | Move active window to desktop 1–9 & follow |
 | `Win` + `Ctrl` + `Left/Right` | Cycle desktops left/right |
-| `Win` + `W` | Close active window |
+| `Win` + `W` | Close active window (disabled on Widgets panel) |
 | `Win` + `Shift` + `C` | Launch Firefox |
 | `Win` + `Enter` | Launch Windows Terminal (`wt.exe`) |
 
+> **Note:** Windows reserves `Win+1-9` for taskbar apps. This script uses `LWin & 1-9` (hold Left Win key, then tap number) — similar to Linux `Super+1`. To disable Windows taskbar hotkeys entirely, see [Troubleshooting](#-troubleshooting).
+>
 > **Tip:** Desktop names persist across reboots. Rename via Windows' built-in desktop UI (Win+Tab → right-click desktop → Rename).
 
 ---
@@ -208,6 +210,8 @@ Ahk2Exe.exe /in src\virtual_desktops.ahk /out VirtualDesktopManager.exe /icon cu
 | `Win+Shift+C` opens wrong browser | Edit `src\virtual_desktops.ahk` line 30: `Run "firefox"` → your browser path |
 | Installer: "DLL hash verification FAILED" | Re-run `.\install.ps1` to force re-copy; check antivirus isn't blocking |
 | Installer: "Not in repository root" | Run `.\install.ps1` from the cloned repo root directory |
+| `Win+1-9` opens taskbar apps instead of switching desktops | Windows reserves `Win+1-9` for taskbar. This script uses `LWin & 1-9` (hold Left Win, tap number). To fully disable Windows taskbar hotkeys, run as Admin: `reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "DisallowWinKeyHotkeys" /t REG_DWORD /d 1 /f` then reboot |
+| `Win+W` opens Widgets instead of closing window | Script uses `#HotIf` to disable on Widgets panel. If still conflicts, use `Win+Shift+W` or remap in script |
 
 ---
 

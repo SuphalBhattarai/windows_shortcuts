@@ -11,7 +11,7 @@ VDA_DLL_PATH := A_AppData "\shortcuts\VirtualDesktopAccessor.dll"
 ; --- Init VDA ---
 vdaOk := VDA.Init()
 if !vdaOk {
-    TrayTip "Virtual Desktops", "Failed to load VirtualDesktopAccessor.dll`nExpected at: " VDA_DLL_PATH, 5, 0x2
+    TrayTip "Virtual Desktops", "Failed to load VirtualDesktopAccessor.dll`nExpected at: " VDA_DLL_PATH, 5
     Sleep 3000
     ExitApp
 }
@@ -65,8 +65,8 @@ GoToDesktop(n) {
     try {
         VDA.Ensure(n)
         VDA.GoTo(n)
-    } catch e {
-        TrayTip "Virtual Desktops", "GoToDesktop failed: " e.Message, 3, 0x2
+    } catch as err {
+        TrayTip "Virtual Desktops", "GoToDesktop failed: " err.Message, 3
     }
 }
 
@@ -75,8 +75,8 @@ MoveWindowToDesktop(n) {
         VDA.Ensure(n)
         VDA.MoveCurrentWindowToDesktop(n)
         VDA.GoTo(n)
-    } catch e {
-        TrayTip "Virtual Desktops", "MoveWindowToDesktop failed: " e.Message, 3, 0x2
+    } catch as err {
+        TrayTip "Virtual Desktops", "MoveWindowToDesktop failed: " err.Message, 3
     }
 }
 
