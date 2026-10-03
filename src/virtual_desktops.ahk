@@ -33,23 +33,29 @@ for n, name in desktopNames {
 ; --- Save names on exit ---
 OnExit(*) => SaveConfig()
 
-; --- Win+1..9 : Switch to desktop N ---
+; --- LWin & 1..9 : Switch to desktop N (hold LWin, tap number) ---
 Loop 9 {
     i := A_Index
-    if !Hotkey "#" i, (*) => GoToDesktop(i - 1)
-        OutputDebug "Failed to register Win+" i
+    if !Hotkey "LWin & " i, (*) => GoToDesktop(i - 1)
+        OutputDebug "Failed to register LWin & " i
 }
 
-; --- Win+Shift+1..9 : Move active window to desktop N ---
+; --- LWin & Shift+1..9 : Move active window to desktop N ---
 Loop 9 {
     i := A_Index
-    if !Hotkey "#+" i, (*) => MoveWindowToDesktop(i - 1)
-        OutputDebug "Failed to register Win+Shift+" i
+    if !Hotkey "LWin & Shift+ " i, (*) => MoveWindowToDesktop(i - 1)
+        OutputDebug "Failed to register LWin & Shift+ " i
 }
 
-; --- From shortcut.txt ---
+; --- Win+W : Close window (only when NOT on Widgets panel) ---
+#If !WinActive("ahk_class Windows.UI.Core.CoreWindow")
 Hotkey "#w", (*) => WinClose("A")
+#If
+
+; --- Win+Shift+C : Open Firefox ---
 Hotkey "#+c", (*) => Run "firefox"
+
+; --- Win+Enter : Open Windows Terminal ---
 Hotkey "#Enter", (*) => Run "wt.exe"
 
 ; --- Win+Ctrl+Left/Right : Cycle desktops ---

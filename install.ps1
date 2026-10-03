@@ -138,9 +138,31 @@ function Get-DLLHash {
 
 function Find-Ahk2Exe {
     $candidates = @(
-        "${env:ProgramFiles}\AutoHotkey\Compiler\Ahk2Exe.exe",
+        # Standard install (winget / official installer)
+        "${env:ProgramFiles}\AutoHotkey\Compiler\Ahk2Exe.exe"
         "${env:ProgramFiles(x86)}\AutoHotkey\Compiler\Ahk2Exe.exe"
+        
+        # Chocolatey
+        "C:\ProgramData\chocolatey\lib\autohotkey.install\tools\Compiler\Ahk2Exe.exe"
+        "C:\ProgramData\chocolatey\bin\Ahk2Exe.exe"
+        
+        # Scoop
+        "$env:USERPROFILE\scoop\apps\autohotkey\current\Compiler\Ahk2Exe.exe"
+        "$env:USERPROFILE\scoop\shims\Ahk2Exe.exe"
+        
+        # Portable / user install
+        "$env:LOCALAPPDATA\AutoHotkey\Compiler\Ahk2Exe.exe"
+        "$env:LOCALAPPDATA\Programs\AutoHotkey\Compiler\Ahk2Exe.exe"
     )
+    
+    # Expand WinGet package paths (wildcard)
+    $wingetBase = "$env:LOCALAPPDATA\Microsoft\WinGet\Packages"
+    if (Test-Path $wingetBase) {
+        $wingetPaths = Get-ChildItem $wingetBase -Filter "AutoHotkey.AutoHotkey*" -Directory -ErrorAction SilentlyContinue
+        foreach ($pkg in $wingetPaths) {
+            $candidates += Join-Path $pkg.FullName "Compiler\Ahk2Exe.exe"
+        }
+    }
     
     # Check PATH for Ahk2Exe
     $pathCmd = Get-Command Ahk2Exe.exe -ErrorAction SilentlyContinue
@@ -148,15 +170,30 @@ function Find-Ahk2Exe {
         $candidates += $pathCmd.Source
     }
     
+    # Fallback: where.exe
+    try {
+        $whereResult = where.exe Ahk2Exe 2>$null
+        if ($whereResult -and $whereResult -notmatch 'Could not find') {
+            Write-Log "where.exe found: $whereResult"
+            $candidates += $whereResult.Trim().Split("`n")
+        }
+    } catch {
+        Write-Log "where.exe failed: $($_.Exception.Message)" 'WARN'
+    }
+    
     foreach ($c in $candidates) {
         if ($c -and (Test-Path $c)) {
+            Write-Log "Testing candidate: ${c}"
             try {
                 $ver = & $c /? 2>&1
                 if ($ver -match 'v2\.\d') {
-                    Write-Log "Found Ahk2Exe (AHK v2): $c"
+                    Write-Log "Found Ahk2Exe (AHK v2): ${c}"
                     return $c
                 }
-            } catch { }
+            } catch {
+                $errMsg = $_.Exception.Message
+                Write-Log ("Error testing candidate {0}: {1}" -f $c, $errMsg) 'WARN'
+            }
         }
     }
     return $null
