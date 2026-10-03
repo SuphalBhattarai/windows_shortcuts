@@ -36,31 +36,29 @@ OnExit(*) => SaveConfig()
 ; --- LWin & 1..9 : Switch to desktop N (hold LWin, tap number) ---
 Loop 9 {
     i := A_Index
-    if !Hotkey "LWin & " i, (*) => GoToDesktop(i - 1)
-        OutputDebug "Failed to register LWin & " i
+    Hotkey "LWin & " i, (*) => GoToDesktop(i - 1)
 }
 
 ; --- LWin & Shift+1..9 : Move active window to desktop N ---
 Loop 9 {
     i := A_Index
-    if !Hotkey "LWin & Shift+ " i, (*) => MoveWindowToDesktop(i - 1)
-        OutputDebug "Failed to register LWin & Shift+ " i
+    Hotkey "LWin & Shift+ " i, (*) => MoveWindowToDesktop(i - 1)
 }
 
 ; --- Win+W : Close window (only when NOT on Widgets panel) ---
-#If !WinActive("ahk_class Windows.UI.Core.CoreWindow")
-Hotkey "#w", (*) => WinClose("A")
-#If
+#HotIf !WinActive("ahk_class Windows.UI.Core.CoreWindow")
+#w::WinClose("A")
+#HotIf
 
 ; --- Win+Shift+C : Open Firefox ---
-Hotkey "#+c", (*) => Run "firefox"
+#+c::Run "firefox"
 
 ; --- Win+Enter : Open Windows Terminal ---
-Hotkey "#Enter", (*) => Run "wt.exe"
+#Enter::Run "wt.exe"
 
 ; --- Win+Ctrl+Left/Right : Cycle desktops ---
-Hotkey "#^Left", (*) => CycleDesktop(-1)
-Hotkey "#^Right", (*) => CycleDesktop(1)
+#^Left::CycleDesktop(-1)
+#^Right::CycleDesktop(1)
 
 ; --- Functions ---
 GoToDesktop(n) {
